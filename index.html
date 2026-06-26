@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Kitchen Registration | HapyCure</title>
 
   <style>
@@ -317,6 +316,18 @@
       margin: 16px 0;
     }
 
+    .api-box {
+      background: #f9fafb;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .api-box .form-label {
+      margin-bottom: 6px;
+    }
+
     .success,
     .error {
       display: none;
@@ -451,7 +462,7 @@
               <div class="form-group full">
                 <label class="form-label">Documents</label>
                 <input class="form-input" id="documents" type="file" multiple />
-                <p class="hint">Backend connect hone ke baad documents server par upload honge.</p>
+                <p class="hint">Abhi sirf document file names backend me jayenge. Real upload baad me add karenge.</p>
               </div>
             </div>
           </section>
@@ -500,7 +511,7 @@
               <div class="form-group full">
                 <label class="form-label">Food Photo</label>
                 <input class="form-input" id="foodPhoto" type="file" accept="image/*" />
-                <p class="hint">Abhi image name save hoga. Backend ke baad actual image upload hoga.</p>
+                <p class="hint">Abhi image name save hoga. Actual image upload baad me add karenge.</p>
               </div>
             </div>
 
@@ -516,10 +527,16 @@
             <h2 class="card-title">Preview</h2>
             <p class="card-subtitle">Added food items will appear here.</p>
 
+            <div class="api-box">
+              <label class="form-label">Backend URL</label>
+              <input class="form-input" id="apiUrl" value="http://localhost:5000" />
+              <p class="hint">Local test ke liye ye same rakho. Deploy ke baad Render URL dalna hoga.</p>
+            </div>
+
             <div id="foodList" class="food-list"></div>
 
             <div class="notice">
-              Submit ke baad request admin dashboard me approval ke liye jayegi. Abhi data localStorage me save hoga.
+              Submit ke baad request backend me save hogi. Admin approve karega, tab public web app me dikhegi.
             </div>
 
             <div class="summary-row">
@@ -537,7 +554,7 @@
               <button class="btn" id="resetAllBtn" type="button">Reset</button>
             </div>
 
-            <div class="success" id="successBox">Kitchen request saved successfully.</div>
+            <div class="success" id="successBox">Kitchen request submitted successfully.</div>
             <div class="error" id="errorBox">Please fill required details.</div>
           </section>
         </aside>
@@ -587,11 +604,7 @@
       foodCount.textContent = foodItems.length;
 
       if (foodItems.length === 0) {
-        foodList.innerHTML = `
-          <div class="empty-state">
-            No food items added yet.
-          </div>
-        `;
+        foodList.innerHTML = `<div class="empty-state">No food items added yet.</div>`;
         return;
       }
 
@@ -610,9 +623,7 @@
 
           <div class="food-desc">${item.description || "No description added."}</div>
 
-          <button class="btn btn-danger" type="button" onclick="removeFoodItem(${index})">
-            Remove
-          </button>
+          <button class="btn btn-danger" type="button" onclick="removeFoodItem(${index})">Remove</button>
         </div>
       `).join("");
     }
@@ -652,52 +663,53 @@
       renderFoodItems();
     }
 
-    function submitKitchen() {
+    async function submitKitchen() {
       hideMessages();
 
-      const kitchenName = getValue("kitchenName");
-      const ownerName = getValue("ownerName");
-      const phone = getValue("phone");
-      const email = getValue("email");
-      const city = getValue("city");
-      const foodType = getValue("foodType");
-      const openingTime = getValue("openingTime");
-      const closingTime = getValue("closingTime");
-      const address = getValue("address");
+      const apiUrl = getValue("apiUrl").replace(/\/$/, "");
       const documentsInput = document.getElementById("documents");
+      const documentNames = Array.from(documentsInput.files).map(file => file.name);
 
-      if (!kitchenName || !ownerName || !phone || !city || !foodType || !address || foodItems.length === 0) {
+      const requestData = {
+        kitchenName: getValue("kitchenName"),
+        owner: getValue("ownerName"),
+        phone: getValue("phone"),
+        email: getValue("email"),
+        city: getValue("city"),
+        address: getValue("address"),
+        foodType: getValue("foodType"),
+        openingTime: getValue("openingTime"),
+        closingTime: getValue("closingTime"),
+        documents: documentNames,
+        foodItems: [...foodItems]
+      };
+
+      if (!requestData.kitchenName || !requestData.owner || !requestData.phone || !requestData.city || !requestData.address || !requestData.foodType || foodItems.length === 0) {
         showError("Kitchen details complete karo aur kam se kam 1 food item add karo.");
         return;
       }
 
-      const documentNames = Array.from(documentsInput.files).map(file => file.name);
+      try {
+        const response = await fetch(`${apiUrl}/api/kitchens/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestData)
+        });
 
-      const request = {
-        id: "K-" + Date.now(),
-        kitchenName,
-        owner: ownerName,
-        phone,
-        email,
-        city,
-        address,
-        foodType,
-        openingTime,
-        closingTime,
-        documents: documentNames,
-        foodItems: [...foodItems],
-        status: "Pending",
-        createdAt: new Date().toISOString()
-      };
+        const result = await response.json();
 
-      const oldRequests = JSON.parse(localStorage.getItem("hapycureKitchenRequests")) || [];
-      oldRequests.push(request);
+        if (!response.ok || !result.success) {
+          showError(result.message || "Request submit nahi hua.");
+          return;
+        }
 
-      localStorage.setItem("hapycureKitchenRequests", JSON.stringify(oldRequests));
-
-      showSuccess("Kitchen request saved successfully. Status pending hai.");
-
-      resetFormOnly();
+        showSuccess("Kitchen request backend me submit ho gaya. Admin approval pending hai.");
+        resetFormOnly();
+      } catch (error) {
+        showError("Backend connect nahi ho raha. Check karo backend run ho raha hai ya nahi.");
+      }
     }
 
     function resetFormOnly() {
