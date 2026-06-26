@@ -2,13 +2,38 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const multer = require("multer");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const DB_PATH = path.join(__dirname, "data", "db.json");
+const UPLOAD_PATH = path.join(__dirname, "uploads");
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(UPLOAD_PATH));
+
+if (!fs.existsSync(UPLOAD_PATH)) {
+  fs.mkdirSync(UPLOAD_PATH, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, UPLOAD_PATH);
+  },
+  filename: function (req, file, cb) {
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "-");
+    cb(null, Date.now() + "-" + safeName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024
+  }
+});
 
 function ensureDB() {
   const folder = path.dirname(DB_PATH);
@@ -34,7 +59,11 @@ function writeDB(data) {
 }
 
 function createId() {
-  return "K-" + Date.now();
+  return "HC-" + Date.now().toString(36).toUpperCase();
+}
+
+function fileUrl(req, file) {
+  return req.protocol + "://" + req.get("host") + "/uploads/" + file.filename;
 }
 
 app.get("/", function (req, res) {
@@ -51,51 +80,121 @@ app.get("/api/health", function (req, res) {
   });
 });
 
-app.post("/api/kitchens/register", function (req, res) {
-  const data = req.body;
+app.post(
+  "/api/kitchens/register",
+  upload.fields([
+    { name: "documents", maxCount: 5 },
+    { name: "foodPhotos", maxCount: 20 }
+  ]),
+  function (req, res) {
+    const data = req.body;
+    let foodItems = [];
 
-  if (!data.kitchenName || !data.owner || !data.phone || !data.city || !data.address || !data.foodType) {
-    return res.status(400).json({
-      success: false,
-      message: "Kitchen details incomplete hai"
+    try {
+      foodItems = JSON.parse(data.foodItems || "[]");
+    } catch (error) {
+      foodItems = [];
+    }
+
+    if (!data.kitchenName || !data.owner || !data.phone || !data.city || !data.address || !data.foodType) {
+      return res.status(400).json({
+        success: false,
+        message: "Kitchen details incomplete hai"
+      });
+    }
+
+    if (!/^[0-9]{10}$/.test(data.phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number exactly 10 digit ka hona chahiye"
+      });
+    }
+
+    if (!Array.isArray(foodItems) || foodItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Kam se kam 1 food item add karo"
+      });
+    }
+
+    const db = readDB();
+    const documentFiles = req.files && req.files.documents ? req.files.documents : [];
+    const foodPhotoFiles = req.files && req.files.foodPhotos ? req.files.foodPhotos : [];
+
+    const documents = documentFiles.map(function (file) {
+      return {
+        name: file.originalname,
+        url: fileUrl(req, file)
+      };
+    });
+
+    const finalFoodItems = foodItems.map(function (item, index) {
+      const photoFile = foodPhotoFiles[index];
+
+      return {
+        name: item.name,
+        price: item.price,
+        mealType: item.mealType,
+        category: item.category,
+        description: item.description || "",
+        photo: photoFile
+          ? {
+              name: photoFile.originalname,
+              url: fileUrl(req, photoFile)
+            }
+          : null
+      };
+    });
+
+    const kitchen = {
+      id: createId(),
+      kitchenName: data.kitchenName,
+      owner: data.owner,
+      phone: data.phone,
+      email: data.email || "",
+      city: data.city,
+      address: data.address,
+      foodType: data.foodType,
+      openingTime: data.openingTime || "",
+      closingTime: data.closingTime || "",
+      documents,
+      foodItems: finalFoodItems,
+      status: "Pending",
+      createdAt: new Date().toISOString(),
+      approvedAt: null,
+      rejectedAt: null
+    };
+
+    db.kitchens.push(kitchen);
+    writeDB(db);
+
+    res.status(201).json({
+      success: true,
+      message: "Kitchen request submitted successfully",
+      trackingId: kitchen.id,
+      kitchen
     });
   }
+);
 
-  if (!Array.isArray(data.foodItems) || data.foodItems.length === 0) {
-    return res.status(400).json({
-      success: false,
-      message: "Kam se kam 1 food item add karo"
-    });
-  }
-
+app.get("/api/kitchens/status/:id", function (req, res) {
   const db = readDB();
+  const kitchen = db.kitchens.find(function (item) {
+    return item.id === req.params.id;
+  });
 
-  const kitchen = {
-    id: createId(),
-    kitchenName: data.kitchenName,
-    owner: data.owner,
-    phone: data.phone,
-    email: data.email || "",
-    city: data.city,
-    address: data.address,
-    foodType: data.foodType,
-    openingTime: data.openingTime || "",
-    closingTime: data.closingTime || "",
-    documents: Array.isArray(data.documents) ? data.documents : [],
-    foodItems: data.foodItems,
-    status: "Pending",
-    createdAt: new Date().toISOString(),
-    approvedAt: null,
-    rejectedAt: null
-  };
+  if (!kitchen) {
+    return res.status(404).json({
+      success: false,
+      message: "Request not found"
+    });
+  }
 
-  db.kitchens.push(kitchen);
-  writeDB(db);
-
-  res.status(201).json({
+  res.json({
     success: true,
-    message: "Kitchen request submitted successfully",
-    kitchen
+    trackingId: kitchen.id,
+    kitchenName: kitchen.kitchenName,
+    status: kitchen.status
   });
 });
 
