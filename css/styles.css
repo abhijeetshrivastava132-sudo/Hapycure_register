@@ -1,0 +1,389 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+body {
+  background: #f8f9fa;
+  color: #111;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 24px 14px 44px;
+  background: #f8f9fa;
+}
+
+.container {
+  max-width: 980px;
+  margin: auto;
+}
+
+.header,
+.card,
+.status-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+}
+
+.header {
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 3px;
+}
+
+.subtitle,
+.card-subtitle,
+.hint,
+.food-desc,
+.status-text {
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.card-subtitle,
+.hint {
+  color: #9ca3af;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.card {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 7px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  background: #fff;
+  color: #111;
+  font-size: 14px;
+  outline: none;
+}
+
+.form-textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: #7f1d1d;
+  box-shadow: 0 0 0 3px rgba(127, 29, 29, 0.08);
+}
+
+.hint {
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.btn {
+  padding: 10px 14px;
+  border-radius: 9px;
+  border: 1px solid #eee;
+  background: #fff;
+  color: #111;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #7f1d1d;
+  color: #fff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: #641717;
+}
+
+.btn-danger {
+  background: #fff0f0;
+  color: #dc2626;
+  border: 1px solid #ffe0e0;
+}
+
+.food-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.food-card {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 14px;
+  background: #fff;
+}
+
+.food-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.food-name,
+.food-price {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.food-price {
+  color: #7f1d1d;
+  white-space: nowrap;
+}
+
+.food-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.tag {
+  background: #f3f4f6;
+  color: #4b5563;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.empty-state {
+  border: 1px dashed #e5e7eb;
+  border-radius: 12px;
+  padding: 28px 16px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+  background: #fff;
+}
+
+.summary-card {
+  position: sticky;
+  top: 20px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.summary-label {
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.summary-value {
+  font-weight: 800;
+}
+
+.error {
+  display: none;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 14px;
+  line-height: 1.4;
+  background: #fff0f0;
+  border: 1px solid #ffe0e0;
+  color: #dc2626;
+}
+
+.status-page {
+  display: none;
+}
+
+.status-card {
+  padding: 26px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.status-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #9ca3af;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.status-title {
+  font-size: 28px;
+  color: #7f1d1d;
+  margin-bottom: 8px;
+}
+
+.tracking-box {
+  background: #f9fafb;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 16px 0;
+}
+
+.tracking-id {
+  font-size: 18px;
+  font-weight: 900;
+  color: #111;
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.status-steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.step {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 14px 8px;
+  text-align: center;
+  background: #fff;
+}
+
+.step-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: block;
+  margin: 0 auto 8px;
+}
+
+.step-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: #6b7280;
+}
+
+.step.pending {
+  border-color: #fde68a;
+  background: #fff8e6;
+}
+
+.step.pending .step-dot {
+  background: #f59e0b;
+}
+
+.step.accepted {
+  border-color: #bbf7d0;
+  background: #f0faf4;
+}
+
+.step.accepted .step-dot {
+  background: #16a34a;
+}
+
+.step.rejected {
+  border-color: #fecaca;
+  background: #fff0f0;
+}
+
+.step.rejected .step-dot {
+  background: #dc2626;
+}
+
+@media (max-width: 820px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-card {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: 14px 10px 32px;
+  }
+
+  .header,
+  .card,
+  .status-card {
+    padding: 18px;
+  }
+
+  .title {
+    font-size: 19px;
+  }
+
+  .form-grid,
+  .status-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .status-title {
+    font-size: 24px;
+  }
+}
