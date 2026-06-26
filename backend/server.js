@@ -128,8 +128,9 @@ app.post(
       };
     });
 
-    const finalFoodItems = foodItems.map(function (item, index) {
-      const photoFile = foodPhotoFiles[index];
+    const finalFoodItems = foodItems.map(function (item) {
+      const photoIndex = Number.isInteger(item.photoUploadIndex) ? item.photoUploadIndex : -1;
+      const photoFile = photoIndex >= 0 ? foodPhotoFiles[photoIndex] : null;
 
       return {
         name: item.name,
